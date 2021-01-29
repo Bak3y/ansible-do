@@ -1,0 +1,36 @@
+- name: folder create
+  ansible.builtin.file:
+    path: /tmp/actions-runner
+    state: directory
+- name: download runner
+  ansible.builtin.unarchive:
+    src: https://github.com/actions/runner/releases/download/v2.276.1/actions-runner-linux-x64-2.276.1.tar.gz
+    dest: /tmp/actions-runner
+    remote_src: yes
+- name: get token
+  shell: |
+    cat /root/runnertoken.txt
+  register: token
+- name: check for runner config
+  stat:
+    path: /tmp/actions-runner/.credentials
+  register: config
+- name: configure runner
+  shell: |
+    export RUNNER_ALLOW_RUNASROOT="1" && /tmp/actions-runner/config.sh --unattended --replace --url https://github.com/Bak3y/bakey.us --token {{ token.stdout }}
+  when: config.stat.exists == False
+- name: check for runner service
+  stat:
+    path:  /etc/systemd/system/actions.runner.Bak3y-bakey.us.bakey-us.service
+  register: service
+- name: install runner service
+  shell: |
+    export RUNNER_ALLOW_RUNASROOT="1" && ./svc.sh install
+  args:
+    chdir: /tmp/actions-runner
+  when: service.stat.exists == False
+- name: start runner service
+  systemd:
+    name: actions.runner.Bak3y-bakey.us.bakey-us.service
+    state: started
+    enabled: yes
