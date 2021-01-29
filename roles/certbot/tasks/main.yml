@@ -1,0 +1,30 @@
+- name: Update snapd
+  shell: |
+    snap install core && snap refresh core
+- name: Remove any apt certbot stuff
+  apt:
+    name: certbot
+    state: absent
+- name: Install certbot
+  community.general.snap:
+    name: certbot
+    classic: yes
+- name: link certbot
+  file:
+    src: /snap/bin/certbot
+    dest: /usr/bin/certbot
+    state: link
+- name: confirm plugin containment level
+  shell: |
+    snap set certbot trust-plugin-with-root=ok
+- name: install dns plugin
+  community.general.snap:
+    name: certbot-dns-digitalocean
+- name: check for certs
+  stat:
+    path: /etc/letsencrypt/live/www.bakey.us/fullchain.pem
+  register: cert
+- name: create cert
+  shell: |
+    certbot certonly --dns-digitalocean --dns-digitalocean-credentials ~/digitalocean.ini -d www.bakey.us
+  when: cert.stat.exists == False
