@@ -24,6 +24,13 @@
   stat:
     path: /etc/letsencrypt/live/www.bakey.us/fullchain.pem
   register: cert
+- name: template out config file
+  template:
+    src: digitalocean.j2
+    dest: ~/digitalocean.ini
+    owner: root
+    group: root
+    mode: 0600
 - name: create cert
   shell: |
     certbot certonly --dns-digitalocean --dns-digitalocean-credentials ~/digitalocean.ini -d www.bakey.us

@@ -7,17 +7,14 @@
     src: https://github.com/actions/runner/releases/download/v2.276.1/actions-runner-linux-x64-2.276.1.tar.gz
     dest: /tmp/actions-runner
     remote_src: yes
-- name: get token
-  shell: |
-    cat /root/runnertoken.txt
-  register: token
 - name: check for runner config
   stat:
     path: /tmp/actions-runner/.credentials
   register: config
 - name: configure runner
   shell: |
-    export RUNNER_ALLOW_RUNASROOT="1" && /tmp/actions-runner/config.sh --unattended --replace --url https://github.com/Bak3y/bakey.us --token {{ token.stdout }}
+    export RUNNER_ALLOW_RUNASROOT="1" && /tmp/actions-runner/config.sh --unattended --replace --url https://github.com/Bak3y/bakey.us --token {{ runnertoken }}
+  no_log: true
   when: config.stat.exists == False
 - name: check for runner service
   stat:
