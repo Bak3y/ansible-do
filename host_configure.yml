@@ -5,3 +5,4 @@
     - docker
     - ghrunner
     - certbot
+    - datadog
